@@ -147,4 +147,49 @@ python app.py
   Ensure your `GNEWS_API_KEY` is valid and not rate-limited.
 - **Other issues:**  
   Check the terminal output for error messages and ensure all environment variables are set.
+
+### Error: "Address already in use" when starting the Flask server
+
+If you see an error like:
+
+```
+Address already in use
+Port 5000 is in use by another program.
+```
+
+It means another process is already using port 5000. To fix this:
+
+#### Option 1: Kill the process using port 5000
+
+**On Windows:**
+
+1. Find the process ID (PID) using port 5000:
+    ```
+    netstat -ano | findstr :5000
+    ```
+2. Kill the process (replace `<PID>` with the actual number):
+    ```
+    taskkill /PID <PID> /F
+    ```
+
+**On macOS/Linux:**
+
+1. Find the process ID (PID):
+    ```
+    lsof -i :5000
+    ```
+2. Kill the process:
+    ```
+    kill -9 <PID>
+    ```
+
+#### Option 2: Run the server on a different port
+
+You can start the Flask app on another port (e.g., 5001):
+
+```
+python phase5_dashboard/app.py --port 5001
+```
+Or modify your code to use a different port.
+
 ---

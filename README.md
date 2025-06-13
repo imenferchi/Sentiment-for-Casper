@@ -147,25 +147,4 @@ python app.py
   Ensure your `GNEWS_API_KEY` is valid and not rate-limited.
 - **Other issues:**  
   Check the terminal output for error messages and ensure all environment variables are set.
-
----
-
-## Contributing
-
-Contributions are welcome! Please open an issue or submit a pull request on the GitHub repository. For major changes, please discuss them first by opening an issue to avoid duplication of work.
-
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some amazing feature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a pull request
-
-Please ensure your code follows the existing style and includes appropriate tests.
-
----
-
-## License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
 ---

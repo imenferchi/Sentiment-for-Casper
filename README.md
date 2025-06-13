@@ -14,6 +14,7 @@ This project provides a complete pipeline for collecting financial news, analyzi
 - [How to Run](#how-to-run)
 - [Troubleshooting](#troubleshooting)
 - [Contributing](#contributing)
+- [Certification](#certification)   <!-- Add this line -->
 
 ---
 
@@ -191,5 +192,11 @@ You can start the Flask app on another port (e.g., 5001):
 python phase5_dashboard/app.py --port 5001
 ```
 Or modify your code to use a different port.
+
+---
+
+## Certification
+
+We, Giovanni Celeste, Imen Ferchichi, and Robert Jones, hereby certify that we have written the program ourselves with the assistance of generative AI. We have thoroughly tested the program and confirm that it executed without errors or crashes.
 
 ---

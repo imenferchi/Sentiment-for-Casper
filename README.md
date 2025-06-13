@@ -1,7 +1,5 @@
 # Sentiment For-Casper: Financial News Sentiment Analysis & Forecasting
 
-![alt text](image.png)
-
 This project provides a complete pipeline for collecting financial news, analyzing sentiment, correlating with S&P 500 market data, forecasting market direction, and visualizing results in a web dashboard.
 
 ---
@@ -16,17 +14,16 @@ This project provides a complete pipeline for collecting financial news, analyzi
 - [How to Run](#how-to-run)
 - [Troubleshooting](#troubleshooting)
 - [Contributing](#contributing)
-- [License](#license)
 
 ---
 
 ## Features
 
-- **Automated news collection** from GNews API using macroeconomic and financial queries.
-- **Sentiment analysis** of news articles using FinBERT (transformers).
-- **Correlation analysis** between news sentiment and S&P 500 returns.
-- **Market forecasting** using machine learning (Random Forest).
-- **Interactive dashboard** (Flask) to visualize sentiment, market data, predictions, and statistics.
+- Automated news collection from GNews API using macroeconomic and financial queries.
+- Sentiment analysis of news articles using FinBERT (transformers).
+- Correlation analysis between news sentiment and S&P 500 returns.
+- Market forecasting using machine learning (Random Forest).
+- Interactive dashboard (Flask) to visualize sentiment, market data, predictions, and statistics.
 
 ---
 
@@ -35,7 +32,7 @@ This project provides a complete pipeline for collecting financial news, analyzi
 ```
 Sentiment-For-Casper/
 │
-├── phase1_data_extraction/      # News extraction, database utilities, config
+├── phase1_data_extraction/      # News extraction, database utilities, config, .env.example
 ├── phase2_sentiment_analysis/   # Sentiment analysis scripts (FinBERT)
 ├── phase3_correlation_index/    # Sentiment/market correlation scripts
 ├── phase4_forecasting_model/    # Forecasting model and backtesting
@@ -49,10 +46,10 @@ Sentiment-For-Casper/
 
 ## Prerequisites
 
-- **Python 3.10 or higher**  
-- **MongoDB** (local or [MongoDB Atlas](https://www.mongodb.com/atlas/database))
-- **GNews API Key** ([Get one here](https://gnews.io/))
-- (Recommended) [Git](https://git-scm.com/) for cloning the repository
+- Python 3.10 or higher  
+- MongoDB (local or [MongoDB Atlas](https://www.mongodb.com/atlas/database))
+- GNews API Key ([Get one here](https://gnews.io/))
+- (Recommended) Git for cloning the repository
 
 ---
 
@@ -150,5 +147,25 @@ python app.py
   Ensure your `GNEWS_API_KEY` is valid and not rate-limited.
 - **Other issues:**  
   Check the terminal output for error messages and ensure all environment variables are set.
+
+---
+
+## Contributing
+
+Contributions are welcome! Please open an issue or submit a pull request on the GitHub repository. For major changes, please discuss them first by opening an issue to avoid duplication of work.
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a pull request
+
+Please ensure your code follows the existing style and includes appropriate tests.
+
+---
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ---

@@ -1,7 +1,6 @@
 # Sentiment For-Casper: Financial News Sentiment Analysis & Forecasting
 
-![Project Banner](https://via.placeholder.com/800x200?text=Sentiment+Analysis+Dashboard)  
-*You can replace this image with an actual screenshot of the dashboard.*
+![alt text](image.png)
 
 This project provides a complete pipeline for collecting financial news, analyzing sentiment, correlating with S&P 500 market data, forecasting market direction, and visualizing results in a web dashboard.
 
@@ -153,14 +152,3 @@ python app.py
   Check the terminal output for error messages and ensure all environment variables are set.
 
 ---
-
-## Contributing
-
-Contributions are welcome! Please open an issue or submit a pull request.
-
----
-
-## License
-
-This project is for educational and research purposes.  
-See [LICENSE](LICENSE) for details.

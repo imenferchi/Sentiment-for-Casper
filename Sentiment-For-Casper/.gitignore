@@ -1,0 +1,64 @@
+# =============================================================================
+# Sentiment For-Casper Project - .gitignore
+# =============================================================================
+# This file tells Git which files and folders to ignore in version control.
+# It is important to keep your repository clean and avoid uploading sensitive,
+# system, or unnecessary files (like virtual environments and local configs).
+# =============================================================================
+
+# Ignore Python virtual environments
+venv/
+.env/
+.env.*        # Any environment variable files
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# VS Code settings and workspace files
+.vscode/
+*.code-workspace
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Log files
+*.log
+
+# Python egg and build files
+*.egg-info/
+dist/
+build/
+
+# Ignore test outputs and coverage
+htmlcov/
+.coverage
+.tox/
+.nox/
+.cache/
+.pytest_cache/
+
+# Ignore data/output folders (customize as needed)
+data/
+output/
+*.sqlite3
+
+# Ignore any secret or credential files
+secrets.*
+credentials.*
+
+# Ignore backup files
+*~
+*.bak
+
+# Ignore compiled C extensions
+*.so
+
+# =============================================================================
+# END OF .gitignore
+# =============================================================================

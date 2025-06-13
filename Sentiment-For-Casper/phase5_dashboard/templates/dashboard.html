@@ -1,0 +1,667 @@
+<!--
+  Sentiment For-Casper Dashboard
+  ---------------------------------------------------------------------------
+  This HTML file defines the main dashboard UI for the Sentiment For-Casper project.
+  It displays financial sentiment analytics, S&P 500 performance, model predictions,
+  news headlines, and key statistics. The dashboard is interactive and fetches
+  data from Flask API endpoints using JavaScript.
+  ---------------------------------------------------------------------------
+  Key Sections:
+    - Header: Shows project branding and current date.
+    - Metrics Grid: Shows latest sentiment, S&P 500 return, and analytics.
+    - Historical Chart: Visualizes sentiment and market returns over time.
+    - Today & News: Shows today's prediction and top financial news.
+    - Tomorrow: Shows the model's prediction for the next trading day.
+    - Key Statistics: Shows average articles/day, total articles, and match rate.
+    - Disclaimer: Legal notice about informational use.
+  ---------------------------------------------------------------------------
+  Styling is included in the <style> tag for a modern, responsive look.
+  JavaScript at the bottom handles all data fetching and dynamic updates.
+-->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+  />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <title>Sentiment For-Casper | Financial Analytics Dashboard</title>
+
+  <!-- Chart.js CDN for rendering interactive charts -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+    * { margin:0; padding:0; box-sizing:border-box; }
+    html, body { width:100%; height:100%; overflow-x:hidden; }
+    body {
+      font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+      background:#f8f9fb; color:#1a1d29; line-height:1.6;
+      -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale;
+      font-size:1rem;
+    }
+    .dashboard-wrapper { min-height:100vh; background:linear-gradient(180deg,#f8f9fb 0%,#e9ecf2 100%); }
+    .container { max-width:90vw; margin:0 auto; padding:0 2.5vw; }
+    @media(min-width:1600px){ .container{ max-width:1600px; padding:0 40px; } }
+    .header {
+      background:#fff; border-bottom:1px solid rgba(0,0,0,.05); padding:24px 0;
+      box-shadow:0 1px 3px rgba(0,0,0,.05);
+    }
+    .header-content { display:flex; justify-content:space-between; align-items:center; }
+    .logo-section { display:flex; align-items:center; gap:12px; }
+    .logo-section h1 { font-size:1.5rem; font-weight:600; color:#1a1d29; letter-spacing:-.02em; }
+    .ghost-badge {
+      background:linear-gradient(135deg,#667eea 0%,#764ba2 100%); width:40px; height:40px;
+      border-radius:12px; display:flex; align-items:center; justify-content:center;
+      font-size:1.3rem; box-shadow:0 4px 12px rgba(102,126,234,.3);
+    }
+    .date-display { font-size:.875rem; color:#64748b; font-weight:500; }
+    @keyframes spin { from{transform:rotate(0deg);} to{transform:rotate(360deg);} }
+    .main-content { padding:32px 0 48px; }
+
+    /* Generic 3-col metrics grid */
+    .metrics-grid {
+      display:grid; grid-template-columns:repeat(3,1fr); gap:24px; margin-bottom:24px;
+    }
+    @media(max-width:1200px){
+      .metrics-grid { grid-template-columns:repeat(auto-fit,minmax(320px,1fr)); }
+    }
+    .metric-card {
+      background:#fff; border-radius:16px; padding:28px;
+      box-shadow:0 1px 3px rgba(0,0,0,.05); transition:.3s;
+      border:1px solid transparent; display:flex; flex-direction:column;
+      justify-content:center;
+    }
+    .metric-card:hover {
+      transform:translateY(-2px);
+      box-shadow:0 8px 24px rgba(0,0,0,.08);
+      border-color:rgba(102,126,234,.1);
+    }
+    .metric-header {
+      display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;
+    }
+    .metric-title {
+      font-size:.875rem; color:#64748b; font-weight:500;
+      text-transform:uppercase; letter-spacing:.05em;
+    }
+    .metric-date {
+      font-size:.75rem; color:#94a3b8; font-weight:400;
+    }
+    .metric-value {
+      font-size:2.5rem; font-weight:700; line-height:1;
+      margin-bottom:8px; letter-spacing:-.02em;
+    }
+    .metric-label {
+      font-size:1rem; font-weight:500;
+      text-transform:capitalize; opacity:.8;
+    }
+    .metric-sentiment .positive { color:#10b981; }
+    .metric-sentiment .negative { color:#ef4444; }
+    .metric-sentiment .neutral  { color:#6b7280; }
+    .metric-return.positive { color:#10b981; }
+    .metric-return.negative { color:#ef4444; }
+
+    /* Chart section */
+    .chart-section {
+      background:#fff; border-radius:16px; padding:32px;
+      box-shadow:0 1px 3px rgba(0,0,0,.05); margin-bottom:24px;
+    }
+    .chart-header { margin-bottom:24px; }
+    .chart-title {
+      font-size:1.25rem; font-weight:600; color:#1a1d29; margin-bottom:4px;
+    }
+    .chart-subtitle {
+      font-size:.875rem; color:#64748b;
+    }
+    .chart-wrapper {
+      position:relative; height:450px; margin-top:24px; width:100%;
+    }
+    canvas {
+      user-select:none; display:block; width:100%!important; height:100%!important;
+      background:#fff;
+    }
+    @media(min-width:1400px){ .chart-wrapper{ height:500px; } }
+
+    /* Loading / error */
+    .loading-container {
+      display:flex; flex-direction:column; align-items:center; justify-content:center;
+      height:100px; gap:12px;
+    }
+    .loading-spinner {
+      width:32px; height:32px;
+      border:3px solid #e2e8f0; border-top:3px solid #6366f1;
+      border-radius:50%; animation:spin 1s linear infinite;
+    }
+    .loading-text { font-size:.875rem; color:#64748b; }
+    .error-message {
+      color:#ef4444; font-size:.875rem; text-align:center;
+      padding:12px; background:#fef2f2; border-radius:8px;
+    }
+
+    /* --- NEW: two-column grid for TODAY + NEWS --- */
+    .today-grid {
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:24px;
+      margin-bottom:24px;
+    }
+    @media(max-width:768px){
+      .today-grid { grid-template-columns:1fr; }
+    }
+
+    /* forecast-card styling */
+    .forecast-card {
+      background:#fff; border-radius:16px; padding:24px;
+      box-shadow:0 1px 4px rgba(0,0,0,.05); text-align:center;
+    }
+    #forecast-direction {
+      font-size:2rem; font-weight:700; margin-bottom:8px;
+    }
+    #forecast-confidence {
+      font-size:.875rem; color:#64748b;
+    }
+
+    /* news list override */
+    #newsContent {
+      display:flex; flex-direction:column; align-items:flex-start;
+      gap:16px; padding:0 12px;
+    }
+    .news-item { margin-bottom:16px; }
+    .news-item a {
+      color:#4f46e5; font-weight:500; text-decoration:none;
+    }
+    .news-item a:hover { text-decoration:underline; }
+    .news-source {
+      font-size:.75rem; color:#94a3b8; margin-top:4px;
+    }
+
+    /* disclaimer */
+    .disclaimer {
+      margin-top:32px; background:#fef2f2; border-left:4px solid #ef4444;
+      padding:16px; border-radius:8px;
+    }
+    .disclaimer p { font-size:.875rem; color:#64748b; line-height:1.4; }
+  </style>
+</head>
+
+<body>
+  <div class="dashboard-wrapper">
+    <!-- Header: Project logo and current date -->
+    <header class="header">
+      <div class="container">
+        <div class="header-content">
+          <div class="logo-section">
+            <div class="ghost-badge">👻</div>
+            <h1>Sentiment For-Casper</h1>
+          </div>
+          <span class="date-display" id="currentDate">Loading...</span>
+        </div>
+      </div>
+    </header>
+
+    <main class="main-content">
+      <div class="container">
+
+        <!-- PAST METRICS: Shows latest sentiment, S&P 500 return, and analytics -->
+        <section class="metrics-section">
+          <h2 class="chart-title" style="margin-bottom:16px;">
+            LEARNING FROM THE PAST...
+          </h2>
+          <div class="metrics-grid">
+            <!-- Market Sentiment Card -->
+            <div class="metric-card">
+              <div class="metric-header">
+                <h3 class="metric-title">Market Sentiment</h3>
+                <span class="metric-date" id="sentimentDate"></span>
+              </div>
+              <div id="sentimentContent">
+                <div class="loading-container">
+                  <div class="loading-spinner"></div>
+                  <span class="loading-text">Loading sentiment...</span>
+                </div>
+              </div>
+            </div>
+            <!-- S&P 500 Performance Card -->
+            <div class="metric-card">
+              <div class="metric-header">
+                <h3 class="metric-title">S&P 500 Performance</h3>
+                <span class="metric-date" id="sp500Date"></span>
+              </div>
+              <div id="sp500Content">
+                <div class="loading-container">
+                  <div class="loading-spinner"></div>
+                  <span class="loading-text">Loading market data...</span>
+                </div>
+              </div>
+            </div>
+            <!-- Advanced Analytics – Yesterday Card -->
+            <div class="metric-card">
+              <div class="metric-header">
+                <h3 class="metric-title">Advanced Analytics – Yesterday</h3>
+              </div>
+              <div id="advancedAnalyticsContent">
+                <div class="loading-container">
+                  <div class="loading-spinner"></div>
+                  <span class="loading-text">Loading analytics...</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- HISTORICAL CHART: Sentiment vs Market Performance -->
+        <section class="chart-section">
+          <div class="chart-header">
+            <h1 class="chart-title">Historical Sentiment vs Market Performance</h1>
+            <p class="chart-subtitle">Daily comparison for trading days only</p>
+          </div>
+          <div class="chart-wrapper">
+            <canvas id="historicalChart"></canvas>
+          </div>
+        </section>
+
+        <!-- TODAY + NEWS: Today's prediction and top news headlines -->
+        <section class="tomorrow-section">
+          <h2 class="tomorrow-title" style="margin-bottom:16px;">
+            LET’S TAKE A LOOK AT TODAY
+          </h2>
+          <div class="today-grid">
+            <!-- Today's Prediction Card -->
+            <div class="metric-card">
+              <div class="metric-header">
+                <h3 class="metric-title">Advanced Analytics – Today</h3>
+              </div>
+              <div id="forecast-container">
+                <div class="loading-container">
+                  <div class="loading-spinner"></div>
+                  <span class="loading-text">Loading prediction...</span>
+                </div>
+              </div>
+            </div>
+            <!-- Top Financial News Card -->
+            <div class="metric-card">
+              <div class="metric-header">
+                <h3 class="metric-title">Top Financial News</h3>
+              </div>
+              <div id="newsContent">
+                <div class="loading-container">
+                  <div class="loading-spinner"></div>
+                  <span class="loading-text">Loading news...</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- Tomorrow's Prediction Card -->
+          <h2 class="tomorrow-title" style="margin-top:48px; margin-bottom:16px;">
+            AND TOMORROW? 🔮
+          </h2>
+          <div class="metrics-grid">
+            <div class="metric-card" style="text-align:center;">
+              <div class="metric-header">
+                <h3 class="metric-title">Prediction for Tomorrow</h3>
+              </div>
+              <div id="tomorrowForecast">
+                <div class="loading-container">
+                  <div class="loading-spinner"></div>
+                  <span class="loading-text">Loading prediction...</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- KEY STATISTICS: Model and data coverage summary -->
+        <section class="metrics-section" style="margin-top:48px;">
+          <h2 class="chart-title" style="margin-bottom:16px;">🔢 Key Model Statistics</h2>
+          <div class="metrics-grid">
+            <div class="metric-card">
+              <div class="metric-header"><h3 class="metric-title">Avg. Articles / Day</h3></div>
+              <div id="avgArticlesContent" class="fade-in">
+                <div class="loading-container">
+                  <div class="loading-spinner"></div>
+                  <span class="loading-text">Loading...</span>
+                </div>
+              </div>
+            </div>
+            <div class="metric-card">
+              <div class="metric-header"><h3 class="metric-title">Total Articles</h3></div>
+              <div id="totalArticlesContent" class="fade-in">
+                <div class="loading-container">
+                  <div class="loading-spinner"></div>
+                  <span class="loading-text">Loading...</span>
+                </div>
+              </div>
+            </div>
+            <div class="metric-card">
+              <div class="metric-header"><h3 class="metric-title">Sentiment-Return Match</h3></div>
+              <div id="matchRateContent" class="fade-in">
+                <div class="loading-container">
+                  <div class="loading-spinner"></div>
+                  <span class="loading-text">Loading...</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- DISCLAIMER: Legal notice about informational use -->
+        <div class="disclaimer">
+          <p><strong>Disclaimer:</strong> The news and data shown here are for informational purposes only. They do not constitute financial advice, recommendation, or endorsement of any investment product or strategy. Always do your own research or consult a professional before making any financial decisions.</p>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- JavaScript: Handles all data fetching and dynamic dashboard updates.
+       Each function fetches data from a Flask API endpoint and updates the UI.
+       Chart.js is used for rendering the historical sentiment and market performance
+       chart. The dashboard updates automatically at set intervals.
+  -->
+  <script>
+    let chart = null;
+
+    function updateCurrentDate() {
+      const now = new Date();
+      document.getElementById('currentDate').textContent = now.toLocaleDateString('en-US', {
+        weekday:'long', year:'numeric', month:'long', day:'numeric'
+      });
+    }
+
+    function formatDate(d) {
+      return new Date(d).toLocaleDateString('en-US', {
+        month:'short', day:'numeric', year:'numeric'
+      });
+    }
+
+    async function fetchSentimentData() {
+      try {
+        const res = await fetch('/api/latest_sentiment');
+        const js = await res.json();
+        if (js.success) {
+          const { score, label, date } = js.data;
+          const val = Math.abs(score) < .01 ? score.toFixed(5) : score.toFixed(3);
+          const type = label.split('_')[0];
+          document.getElementById('sentimentDate').textContent = formatDate(date);
+          document.getElementById('sentimentContent').innerHTML = `
+            <div class="metric-sentiment fade-in">
+              <div class="metric-value ${type}">${val}</div>
+              <div class="metric-label ${type}">${label.replace('_',' ')}</div>
+            </div>`;
+        } else {
+          document.getElementById('sentimentContent').innerHTML =
+            '<div class="error-message">No sentiment data</div>';
+        }
+      } catch {
+        document.getElementById('sentimentContent').innerHTML =
+          '<div class="error-message">Failed to load sentiment data</div>';
+      }
+    }
+
+    async function fetchSP500Data() {
+      try {
+        const res = await fetch('/api/yesterday_sp500');
+        const js = await res.json();
+        if (js.success) {
+          const ret = (js.data.return * 100).toFixed(2);
+          const pos = ret >= 0;
+          document.getElementById('sp500Date').textContent = formatDate(js.data.date);
+          document.getElementById('sp500Content').innerHTML = `
+            <div class="fade-in">
+              <div class="metric-value metric-return ${pos?'positive':'negative'}">
+                ${pos?'+':''}${ret}%
+              </div>
+              <div class="metric-label">Daily Return</div>
+            </div>`;
+        } else {
+          document.getElementById('sp500Content').innerHTML =
+            '<div class="error-message">No S&P data</div>';
+        }
+      } catch {
+        document.getElementById('sp500Content').innerHTML =
+          '<div class="error-message">Failed to load market data</div>';
+      }
+    }
+
+    async function fetchYesterdayPrediction() {
+      const el = document.getElementById('advancedAnalyticsContent');
+      try {
+        const res = await fetch('/api/yesterday_prediction');
+        const js = await res.json();
+        if (js.success) {
+          el.innerHTML = `
+            <div class="fade-in">
+              <p><strong>Date:</strong> ${formatDate(js.data.date)}</p>
+              <p><strong>Predicted Direction:</strong> ${js.data.direction}</p>
+              <p><strong>Model Confidence:</strong> ${(js.data.confidence*100).toFixed(1)}%</p>
+            </div>`;
+        } else {
+          el.innerHTML =
+            '<div class="error-message">No prediction for yesterday</div>';
+        }
+      } catch {
+        el.innerHTML = '<div class="error-message">Failed to load yesterday prediction</div>';
+      }
+    }
+
+    async function fetchHistoricalData() {
+      try {
+        const res = await fetch('/api/historical_data');
+        const js = await res.json();
+        if (js.success) createChart(js.data);
+      } catch {}
+    }
+
+    async function fetchFinancialNews() {
+      const el = document.getElementById('newsContent');
+      try {
+        const res = await fetch('/api/today_news');
+        const js = await res.json();
+        if (js.success && js.articles.length) {
+          el.innerHTML = '';
+          js.articles.forEach(a => {
+            const d = document.createElement('div');
+            d.className = 'news-item';
+            d.innerHTML = `
+              <a href="${a.url}" target="_blank" rel="noopener">${a.title}</a>
+              <div class="news-source">${a.source}</div>`;
+            el.appendChild(d);
+          });
+        } else {
+          el.innerHTML = '<div class="error-message">No financial news</div>';
+        }
+      } catch {
+        el.innerHTML = '<div class="error-message">Failed to load news</div>';
+      }
+    }
+
+    async function fetchModelStats() {
+      try {
+        const res = await fetch('/api/statistics');
+        const js = await res.json();
+        if (js.success) {
+          document.getElementById('avgArticlesContent').innerHTML =
+            `<div class="metric-value">${js.data.avg_articles}</div>`;
+          document.getElementById('totalArticlesContent').innerHTML =
+            `<div class="metric-value">${js.data.total_articles}</div>`;
+          document.getElementById('matchRateContent').innerHTML =
+            `<div class="metric-value">${js.data.match_rate.toFixed(1)}%</div>`;
+        } else throw '';
+      } catch {
+        ['avgArticlesContent','totalArticlesContent','matchRateContent'].forEach(id=>{
+          document.getElementById(id).innerHTML =
+            '<div class="error-message">Failed to load</div>';
+        });
+      }
+    }
+
+    async function fetchTodayPrediction() {
+      const container = document.getElementById('forecast-container');
+      try {
+        const res = await fetch('/api/today_prediction');
+        const js = await res.json();
+        if (js.success) {
+          container.innerHTML = `
+            <div class="forecast-card">
+              <div id="forecast-direction" class="${
+                js.data.direction==='UP' ? 'forecast-up' :
+                js.data.direction==='DOWN' ? 'forecast-down' : 'forecast-unknown'
+              }">
+                ${js.data.direction==='UP'? '📈 Up' :
+                  js.data.direction==='DOWN'? '📉 Down' :
+                  js.data.direction}
+              </div>
+              <div id="forecast-confidence">Confidence: ${(js.data.confidence*100).toFixed(1)}%</div>
+            </div>`;
+        } else {
+          container.innerHTML = '<div class="error-message">No prediction for today</div>';
+        }
+      } catch {
+        container.innerHTML = '<div class="error-message">Failed to load today prediction</div>';
+      }
+    }
+
+    async function fetchTomorrowPrediction() {
+      const container = document.getElementById('tomorrowForecast');
+      try {
+        const res = await fetch('/api/tomorrow_prediction');
+        const js = await res.json();
+        if (js.success) {
+          container.innerHTML = `
+            <div class="forecast-card">
+              <div id="forecast-direction" class="${
+                js.data.direction==='UP' ? 'forecast-up' :
+                js.data.direction==='DOWN' ? 'forecast-down' : 'forecast-unknown'
+              }">
+                ${js.data.direction==='UP'? '📈 Up' :
+                  js.data.direction==='DOWN'? '📉 Down' :
+                  js.data.direction}
+              </div>
+              <div id="forecast-confidence">Confidence: ${(js.data.confidence*100).toFixed(1)}%</div>
+            </div>`;
+        } else {
+          container.innerHTML = '<div class="error-message">No prediction for tomorrow</div>';
+        }
+      } catch {
+        container.innerHTML = '<div class="error-message">Failed to load tomorrow prediction</div>';
+      }
+    }
+
+    function createChart(data) {
+      const canvas = document.getElementById('historicalChart');
+      const ctx = canvas.getContext('2d');
+      const dpr = Math.max(window.devicePixelRatio||1, 2);
+      const w = canvas.clientWidth, h = canvas.clientHeight;
+      canvas.width = w*dpr;
+      canvas.height = h*dpr;
+      ctx.scale(dpr, dpr);
+      if (chart) chart.destroy();
+
+      const labels = data.labels.map(l =>
+        new Date(l).toLocaleDateString('en-US',{ month:'short', day:'numeric' })
+      );
+
+      const gradS = ctx.createLinearGradient(0,0,0,h);
+      gradS.addColorStop(0,'#6366f1');
+      gradS.addColorStop(1,'#4f46e5');
+
+      const gradM = ctx.createLinearGradient(0,0,0,h);
+      gradM.addColorStop(0,'#f59e0b');
+      gradM.addColorStop(1,'#d97706');
+
+      chart = new Chart(ctx,{
+        type:'bar',
+        data:{
+          labels,
+          datasets:[
+            {
+              label:'Sentiment Score',
+              data:data.sentiment_scores,
+              backgroundColor:gradS,
+              borderRadius:6,
+              barPercentage:.8,
+              categoryPercentage:.9
+            },
+            {
+              label:'S&P 500 Return (%)',
+              data:data.sp500_returns,
+              backgroundColor:gradM,
+              borderRadius:6,
+              barPercentage:.8,
+              categoryPercentage:.9
+            }
+          ]
+        },
+        options:{
+          responsive:true, maintainAspectRatio:false,
+          interaction:{ mode:'index', intersect:false },
+          scales:{
+            x:{
+              grid:{ display:false, drawBorder:false },
+              ticks:{
+                color:'#64748b',
+                font:{ size:13, weight:500, family:"'Inter',sans-serif" },
+                maxRotation:45,
+                minRotation:45,
+                autoSkip:false
+              }
+            },
+            y:{
+              beginAtZero:true,
+              grid:{ color:'rgba(100,116,139,.1)', drawBorder:false, lineWidth:1 },
+              ticks:{
+                color:'#64748b',
+                font:{ size:13, weight:500, family:"'Inter',sans-serif" },
+                callback:v=>v.toFixed(1),
+                padding:8
+              }
+            }
+          },
+          plugins:{
+            legend:{
+              position:'top',
+              align:'start',
+              labels:{
+                boxWidth:16,
+                boxHeight:16,
+                padding:24,
+                color:'#475569',
+                font:{ size:14, weight:600, family:"'Inter',sans-serif" }
+              }
+            },
+            tooltip:{
+              enabled:true,
+              backgroundColor:'rgba(30,41,59,.95)',
+              titleColor:'#f1f5f9',
+              bodyColor:'#cbd5e1'
+            }
+          },
+          animation:{ duration:750, easing:'easeInOutQuart' }
+        }
+      });
+    }
+
+    // Init all
+    window.addEventListener('DOMContentLoaded', ()=>{
+      updateCurrentDate();
+      Promise.all([
+        fetchSentimentData(),
+        fetchSP500Data(),
+        fetchYesterdayPrediction(),
+        fetchHistoricalData(),
+        fetchFinancialNews(),
+        fetchModelStats(),
+        fetchTodayPrediction(),
+        fetchTomorrowPrediction()
+      ]).catch(console.error);
+
+      setInterval(updateCurrentDate, 60000);
+      window.addEventListener('resize', ()=>{
+        if (chart) chart.resize();
+      });
+    });
+  </script>
+</body>
+</html>

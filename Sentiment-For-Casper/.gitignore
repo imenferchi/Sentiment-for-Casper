@@ -26,6 +26,7 @@ __pycache__/
 # OS generated files
 .DS_Store
 Thumbs.db
+__MACOSX/      # macOS-specific ZIP metadata directory
 
 # Log files
 *.log

@@ -5,7 +5,7 @@ import webbrowser
 from threading import Timer
 from pathlib import Path
 from datetime import datetime, timedelta
-
+import argparse  
 from flask import Flask, render_template, jsonify
 from flask_cors import CORS
 from pymongo import MongoClient, UpdateOne
@@ -335,13 +335,21 @@ def refresh_data():
     """
     return jsonify(success=True, timestamp=datetime.now().isoformat())
 
-def open_browser():
+def open_browser(port):
     """Automatically open the dashboard in the user's default web browser."""
-    webbrowser.open('http://localhost:5000/')
+    webbrowser.open(f'http://localhost:{port}/')
 
 if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description='Run Sentiment For-Casper Dashboard')
+    parser.add_argument('--port', type=int, default=5000, help='Port to run the server on')
+    args = parser.parse_args()
+
     print("\nStarting Sentiment For-Casper Dashboard...")
-    print("Dashboard will open automatically in your browser!")
-    print("Press CTRL+C to stop the server\n")
-    Timer(1.5, open_browser).start()
-    app.run(debug=True, port=5000, use_reloader=False)
+    print(f"Dashboard will run on port {args.port}")
+    print("Accessible via:")
+    print(f"- Local: http://localhost:{args.port}")
+    print(f"- Network: http://<your-ip>:{args.port}")
+    print("\nPress CTRL+C to stop the server\n")
+    
+    Timer(1.5, lambda: open_browser(args.port)).start()
+    app.run(host='0.0.0.0', port=args.port, debug=True, use_reloader=False)

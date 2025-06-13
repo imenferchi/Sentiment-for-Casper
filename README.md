@@ -1,53 +1,166 @@
-# Sentiment Analysis for Financial Markets (Sentiment-For-Casper)
+# Sentiment For-Casper: Financial News Sentiment Analysis & Forecasting
 
 ![Project Banner](https://via.placeholder.com/800x200?text=Sentiment+Analysis+Dashboard)  
 *You can replace this image with an actual screenshot of the dashboard.*
 
-This project provides a multi-phase pipeline for collecting financial news, analyzing sentiment, correlating with market data, and forecasting trends. It includes data extraction, sentiment analysis, correlation analysis, forecasting, and a web dashboard for visualization.
+This project provides a complete pipeline for collecting financial news, analyzing sentiment, correlating with S&P 500 market data, forecasting market direction, and visualizing results in a web dashboard.
 
 ---
 
-## Quick Start
+## Table of Contents
 
-### Prerequisites
+- [Features](#features)
+- [Project Structure](#project-structure)
+- [Prerequisites](#prerequisites)
+- [Installation & Setup](#installation--setup)
+- [Environment Variables](#environment-variables)
+- [How to Run](#how-to-run)
+- [Troubleshooting](#troubleshooting)
+- [Contributing](#contributing)
+- [License](#license)
 
-- Python 3.10 or higher
-- MongoDB (either local installation or [MongoDB Atlas](https://www.mongodb.com/atlas/database))
-- [GNews API Key](https://gnews.io/) (a free tier is available)
+---
 
-### Installation
+## Features
 
-```sh
-# 1. Clone the repository
-git clone https://github.com/imenferchi/sentiment-for-casper.git
-cd sentiment-for-casper
+- **Automated news collection** from GNews API using macroeconomic and financial queries.
+- **Sentiment analysis** of news articles using FinBERT (transformers).
+- **Correlation analysis** between news sentiment and S&P 500 returns.
+- **Market forecasting** using machine learning (Random Forest).
+- **Interactive dashboard** (Flask) to visualize sentiment, market data, predictions, and statistics.
 
-# 2. Set up a virtual environment (recommended)
-python -m venv venv
-# On Linux/MacOS:
-source venv/bin/activate
-# On Windows:
-venv\Scripts\activate
+---
 
-# 3. Install all required dependencies
-pip install -r requirements.txt
+## Project Structure
 
-# 4. Configure environment variables
-cp phase1_data_extraction/.env.example phase1_data_extraction/.env
-# Edit the .env file and fill in your MongoDB URI and GNews API key
+```
+Sentiment-For-Casper/
+│
+├── phase1_data_extraction/      # News extraction, database utilities, config
+├── phase2_sentiment_analysis/   # Sentiment analysis scripts (FinBERT)
+├── phase3_correlation_index/    # Sentiment/market correlation scripts
+├── phase4_forecasting_model/    # Forecasting model and backtesting
+├── phase5_dashboard/            # Flask dashboard app and templates
+├── requirements.txt             # All Python dependencies
+├── README.md                    # This file
+└── .gitignore                   # Files/folders to ignore in git
 ```
 
 ---
 
-**Project Structure and Usage**
+## Prerequisites
 
-- Each phase of the project is organized in its own directory (data extraction, sentiment analysis, correlation, forecasting, dashboard).
-- To run a specific phase, navigate to its directory and execute the relevant Python script.
-- The dashboard can be started by running `python app.py` inside the `phase5_dashboard` directory.
+- **Python 3.10 or higher**  
+- **MongoDB** (local or [MongoDB Atlas](https://www.mongodb.com/atlas/database))
+- **GNews API Key** ([Get one here](https://gnews.io/))
+- (Recommended) [Git](https://git-scm.com/) for cloning the repository
 
 ---
 
-**Notes**
+## Installation & Setup
 
-- Ensure your `.env` file is correctly configured with all required credentials before running the scripts.
-- For any issues or questions, please refer to the documentation or open an issue on
+1. **Clone the repository**
+    ```sh
+    git clone https://github.com/yourusername/sentiment-for-casper.git
+    cd sentiment-for-casper
+    ```
+
+2. **Create and activate a virtual environment**
+    ```sh
+    python -m venv venv
+    # On Linux/Mac:
+    source venv/bin/activate
+    # On Windows:
+    venv\Scripts\activate
+    ```
+
+3. **Install all dependencies**
+    ```sh
+    pip install -r requirements.txt
+    ```
+
+4. **Set up environment variables**
+    - Copy the example file and edit it:
+      ```sh
+      cp phase1_data_extraction/.env.example phase1_data_extraction/.env
+      ```
+    - Open `phase1_data_extraction/.env` and fill in:
+      ```
+      MONGODB_URI=your_mongodb_connection_string
+      GNEWS_API_KEY=your_gnews_api_key
+      MONGO_DB_NAME=fear_index_db
+      ```
+
+---
+
+## Environment Variables
+
+Your `.env` file (in `phase1_data_extraction/`) should look like:
+
+```
+MONGODB_URI=mongodb+srv://<username>:<password>@<cluster-url>/<dbname>?retryWrites=true&w=majority
+GNEWS_API_KEY=your_gnews_api_key
+MONGO_DB_NAME=fear_index_db
+```
+
+---
+
+## How to Run
+
+**1. Extract News (Phase 1)**
+```sh
+cd phase1_data_extraction
+python extract_news.py
+```
+
+**2. Run Sentiment Analysis (Phase 2)**
+```sh
+cd ../phase2_sentiment_analysis
+python sentiment_analysis.py
+```
+
+**3. Compute Correlation Index (Phase 3)**
+```sh
+cd ../phase3_correlation_index
+python sentiment_correlation_index.py
+python sp500_daily_returns.py
+```
+
+**4. Run Forecasting Model (Phase 4)**
+```sh
+cd ../phase4_forecasting_model
+python forecasting_model.py
+```
+
+**5. Launch the Dashboard (Phase 5)**
+```sh
+cd ../phase5_dashboard
+python app.py
+```
+- The dashboard will open automatically in your browser at [http://localhost:5000](http://localhost:5000).
+
+---
+
+## Troubleshooting
+
+- **Missing dependencies:**  
+  Make sure you ran `pip install -r requirements.txt` in your virtual environment.
+- **MongoDB connection errors:**  
+  Double-check your `MONGODB_URI` in the `.env` file.
+- **GNews API errors:**  
+  Ensure your `GNEWS_API_KEY` is valid and not rate-limited.
+- **Other issues:**  
+  Check the terminal output for error messages and ensure all environment variables are set.
+
+---
+
+## Contributing
+
+Contributions are welcome! Please open an issue or submit a pull request.
+
+---
+
+## License
+
+This project is for educational and research purposes.  
+See [LICENSE](LICENSE) for details.
